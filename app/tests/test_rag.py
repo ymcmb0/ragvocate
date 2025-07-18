@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 from app.main import app  # Adjust this to your FastAPI app location
 
 client = TestClient(app)
-
 # Sample questions for testing
 test_inputs = [
     {
