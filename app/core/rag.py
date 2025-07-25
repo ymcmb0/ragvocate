@@ -3,7 +3,17 @@ import os
 from langchain.chains import RetrievalQA
 from langchain_openai import ChatOpenAI
 from app.core.embedding_loader import load_vectorstore
+from app.core.langgraph_basic import build_graph  # Make sure your LangGraph code is here
+from app.core.langgraph_report_agent import build_immigration_graph
 
+def setup_langgraph():
+    retriever = load_vectorstore("statutes").as_retriever()
+    return build_graph(retriever)
+
+
+def setup_report_graph():
+    retriever = load_vectorstore("statutes").as_retriever()
+    return build_immigration_graph(retriever)
 
 def setup_qa_chain():
     llm = ChatOpenAI(

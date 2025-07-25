@@ -1,10 +1,10 @@
 import json
 import os
 import re
-
 from dotenv import load_dotenv
 
 load_dotenv()
+
 # === CONFIG ===
 precedents_dir = os.getenv("PRECEDENTS_RAW_TEXT")
 output_dir = os.getenv("PRECEDENTS_RAW_META")
@@ -51,15 +51,19 @@ for fname in os.listdir(precedents_dir):
     laws = list(set(law_ref_pattern.findall(body_text)))
     consts = list(set(const_ref_pattern.findall(body_text)))
 
-    # Metadata JSON
+    # Flatten lists to comma-separated strings (to make Chroma happy)
+    laws_str = ", ".join(laws) if laws else None
+    consts_str = ", ".join(consts) if consts else None
+
+    # Metadata JSON (all values now str, int, or None)
     metadata = {
         "case_id": case_id,
         "source": "precedents",
         "title": first_line.strip() if first_line else "Unknown Title",
-        "year": year,
+        "year": int(year) if year.isdigit() else None,
         "summary": summary,
-        "law_referenced": laws,
-        "constitution_referenced": consts,
+        "law_referenced": laws_str,
+        "constitution_referenced": consts_str,
     }
 
     # Save .json
@@ -67,7 +71,7 @@ for fname in os.listdir(precedents_dir):
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
 
-    print(f"Created metadata for: {fname}")
+    print(f"✅ Created metadata for: {fname}")
 
-print("\nDone generating metadata!")
-print("\nOutput folder:", output_dir)
+print("\n✅ Done generating metadata!")
+print(f"📁 Output folder: {output_dir}")
