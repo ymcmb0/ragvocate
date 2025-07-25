@@ -1,21 +1,15 @@
 # app/core/rag.py
 import os
-
 from langchain.chains import RetrievalQA
-from langchain_community.llms import LlamaCpp
-
+from langchain_openai import ChatOpenAI
 from app.core.embedding_loader import load_vectorstore
 
 
 def setup_qa_chain():
-    llm = LlamaCpp(
-        model_path="models/tinyllama.gguf",
-        n_ctx=2048,
-        n_threads=4,
-        temperature=0.6,
-        max_tokens=512,
-        top_p=0.95,
-        verbose=True,
+    llm = ChatOpenAI(
+    model="gpt-3.5-turbo",  # or "gpt-4" if you have access
+    temperature=0,
+    openai_api_key=os.getenv("OPENAI_API_KEY")  # Reads from your .env
     )
 
     vectorstores = {

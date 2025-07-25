@@ -45,6 +45,7 @@ python-dotenv = "1.1.1"
 # Optional: CORS support
 starlette = "0.47.1"
 llama-cpp-python = "^0.3.14"
+langgraph = "^0.5.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
