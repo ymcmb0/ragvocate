@@ -1,12 +1,14 @@
-import os
-import json
 import glob
+import json
+import os
+
 from dotenv import load_dotenv
+
 load_dotenv()
 # === Settings ===
 text_dir = os.getenv("STATUTES_RAW_TEXT")
 metadata_dir = os.getenv("STATUTES_RAW_META")
-output_path= os.getenv("STATUTES_PROCESSED_TEXT")
+output_path = os.getenv("STATUTES_PROCESSED_TEXT")
 output_jsonl_path = os.path.join(output_path, "statutes_chunks.jsonl")
 chunk_size = 500
 overlap = 100
@@ -17,6 +19,7 @@ os.makedirs(os.path.dirname(output_jsonl_path), exist_ok=True)
 # === Collect all text files (skip metadata files) ===
 txt_files = glob.glob(os.path.join(text_dir, "*.txt"))
 
+
 # === Chunking Function ===
 def chunk_text(text, size, overlap):
     chunks = []
@@ -26,6 +29,7 @@ def chunk_text(text, size, overlap):
         chunks.append(text[start:end])
         start += size - overlap
     return chunks
+
 
 # === Process Files ===
 with open(output_jsonl_path, "w", encoding="utf-8") as out_file:
@@ -53,7 +57,7 @@ with open(output_jsonl_path, "w", encoding="utf-8") as out_file:
             entry = {
                 "id": f"{metadata['section']}_chunk_{idx+1}",
                 "text": chunk,
-                "metadata": metadata
+                "metadata": metadata,
             }
             out_file.write(json.dumps(entry) + "\n")
 

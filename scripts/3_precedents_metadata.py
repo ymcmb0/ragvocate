@@ -1,17 +1,22 @@
+import json
 import os
 import re
-import json
+
 from dotenv import load_dotenv
+
 load_dotenv()
 # === CONFIG ===
-precedents_dir =os.getenv("PRECEDENTS_RAW_TEXT")
+precedents_dir = os.getenv("PRECEDENTS_RAW_TEXT")
 output_dir = os.getenv("PRECEDENTS_RAW_META")
 os.makedirs(output_dir, exist_ok=True)
 
 # === Patterns ===
 case_id_pattern = re.compile(r"^(.*?)\s+\((\d{4})\)")
 law_ref_pattern = re.compile(r"\bsection\s+(\d+[a-zA-Z0-9()\-]*)", re.IGNORECASE)
-const_ref_pattern = re.compile(r"\b(?:First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth|Fourteenth)\s+Amendment", re.IGNORECASE)
+const_ref_pattern = re.compile(
+    r"\b(?:First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth|Ninth|Tenth|Fourteenth)\s+Amendment",
+    re.IGNORECASE,
+)
 
 # === Main Loop ===
 for fname in os.listdir(precedents_dir):
@@ -54,7 +59,7 @@ for fname in os.listdir(precedents_dir):
         "year": year,
         "summary": summary,
         "law_referenced": laws,
-        "constitution_referenced": consts
+        "constitution_referenced": consts,
     }
 
     # Save .json
