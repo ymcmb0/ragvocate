@@ -3,6 +3,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_community.llms import Ollama
 from langchain_core.runnables import Runnable
 from langgraph.graph import StateGraph, END
+from langchain_openai import ChatOpenAI
 import os
 from datetime import datetime
 
@@ -13,7 +14,11 @@ class GraphState(TypedDict):
     answer: Optional[str]
 
 # Initialize LLM
-llm = Ollama(model="tinyllama")
+llm = ChatOpenAI(
+    model="gpt-3.5-turbo",  # or "gpt-4" if you have access
+    temperature=0,
+    openai_api_key=os.getenv("OPENAI_API_KEY")  # Reads from your .env
+    )
 
 def memory(state: GraphState) -> GraphState:
     """Update chat history with the latest question and answer."""
@@ -61,7 +66,7 @@ INSTRUCTIONS:
 
     # Invoke LLM and store answer
     answer = llm.invoke(prompt)
-    state["answer"] = answer
+    state["answer"] = answer.content
     return state
 
 def retrieve_context(state: GraphState, retriever) -> GraphState:
