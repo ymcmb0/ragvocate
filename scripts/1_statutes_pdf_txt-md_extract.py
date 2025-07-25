@@ -1,11 +1,14 @@
-import pdfplumber
-import re
-import os
 import json
+import os
+import re
+
+import pdfplumber
 from dotenv import load_dotenv
+
 load_dotenv()
 # === File and Output Path ===
 pdf_path = os.getenv("PDF_PATH")
+print(f"Processing PDF: {pdf_path}")
 output_dir = os.getenv("STATUTES_RAW_TEXT")
 output_dir_md = os.getenv("STATUTES_RAW_META")
 os.makedirs(output_dir, exist_ok=True)
@@ -25,6 +28,7 @@ note_starts = {
     "editorial_notes": re.compile(r"^EDITORIAL NOTES.*$", re.I),
 }
 
+
 # === Helper: Save each section as txt + metadata ===
 def save_section(sec):
     if not sec or not sec.get("section"):
@@ -37,12 +41,23 @@ def save_section(sec):
         f.write(f"Part: {sec.get('part', 'N/A')}\n")
         f.write(f"Section: {sec['section']} - {sec['section_title']}\n")
         f.write(f"Source: {sec['source']}\n\n")
-        for part in ["main_text", "amendments", "effective_date", "references", "notes", "statutory_notes", "editorial_notes"]:
+        for part in [
+            "main_text",
+            "amendments",
+            "effective_date",
+            "references",
+            "notes",
+            "statutory_notes",
+            "editorial_notes",
+        ]:
             content = sec.get(part, "").strip()
             if content:
                 f.write(f"[{part.upper().replace('_', ' ')}]\n{content}\n\n")
-    with open(os.path.join(output_dir_md, f"{base_name}_metadata.json"), "w", encoding="utf-8") as f:
+    os.makedirs(output_dir_md, exist_ok=True)
+    metadata_path = os.path.join(output_dir_md, f"{base_name}_metadata.json")
+    with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(sec, f, indent=2)
+
 
 # === Extract all text from left/right columns ===
 all_lines = []
@@ -64,7 +79,10 @@ with pdfplumber.open(pdf_path) as pdf:
         for line in lines:
             line = line.strip()
             line = re.sub(r"([a-z])([A-Z])", r"\1 \2", line)
-            if re.match(r"^(ND )?NATIONALITY( Page \d+)?$|^Page \d+ TITLE 8.*$|^§\d+[a-zA-Z\-]* TITLE 8.*$", line):
+            if re.match(
+                r"^(ND )?NATIONALITY( Page \d+)?$|^Page \d+ TITLE 8.*$|^§\d+[a-zA-Z\-]* TITLE 8.*$",
+                line,
+            ):
                 continue
             if buffer:
                 if line and not line[0].islower():
@@ -90,11 +108,15 @@ for line in all_lines:
     # Detect subchapter or part
     sub_match = subchapter_re.match(line)
     if sub_match:
-        current_subchapter = f"SUBCHAPTER {sub_match.group(1)} — {sub_match.group(2).strip()}"
+        current_subchapter = (
+            f"SUBCHAPTER {sub_match.group(1)} — {sub_match.group(2).strip()}"
+        )
         continue
     part_match = part_re.match(line)
     if part_match:
-        current_part_title = f"PART {part_match.group(1)} — {part_match.group(2).strip()}"
+        current_part_title = (
+            f"PART {part_match.group(1)} — {part_match.group(2).strip()}"
+        )
         continue
 
     # Start of a new section
@@ -115,7 +137,7 @@ for line in all_lines:
             "references": "",
             "notes": "",
             "statutory_notes": "",
-            "editorial_notes": ""
+            "editorial_notes": "",
         }
         current_part = "main_text"
         continue

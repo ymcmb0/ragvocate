@@ -1,10 +1,12 @@
-import os
 import json
+import os
 import time
+
 import requests
-from bs4 import BeautifulSoup
 import serpapi
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+
 load_dotenv()
 SERPAPI_KEY = "2cf46e4ff2848fe942fe63c05b153aea322fced94dfe01a91425700edd1aa0a5"  # Sign up at serpapi.com (free tier works)
 
@@ -24,7 +26,7 @@ CASE_NAMES = [
     "INS v. Delgado",
     "INS v. Cardoza-Fonseca",
     "INS v. Elias-Zacarias",
-    "Vartelas v. Holder"
+    "Vartelas v. Holder",
 ]
 
 
@@ -37,7 +39,7 @@ def get_lii_link(case_name):
     params = {
         "q": f"{case_name} site:law.cornell.edu",
         "api_key": SERPAPI_KEY,
-        "engine": "google"
+        "engine": "google",
     }
     search = serpapi.search(params)
     results = search.as_dict()
@@ -60,7 +62,9 @@ def fetch_summary(url):
             return None
 
         paragraphs = content.find_all("p")
-        summary_text = "\n\n".join(p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True))
+        summary_text = "\n\n".join(
+            p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True)
+        )
         return summary_text
     except Exception as e:
         print(f"Failed to fetch {url}: {e}")
@@ -77,7 +81,9 @@ for case in CASE_NAMES:
     print(f"Scraping: {link}")
     summary = fetch_summary(link)
     if summary:
-        filename = os.path.join(SAVE_DIR, case.replace(" ", "_").replace(".", "").replace("/", "") + ".txt")
+        filename = os.path.join(
+            SAVE_DIR, case.replace(" ", "_").replace(".", "").replace("/", "") + ".txt"
+        )
         with open(filename, "w", encoding="utf-8") as f:
             f.write(summary)
         print(f"Saved: {filename}")
