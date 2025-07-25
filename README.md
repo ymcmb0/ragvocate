@@ -1,113 +1,113 @@
 # Ragvocate – AI-Powered RAG Assistant
 
-Ragvocate is an AI-based application that uses LangChain and FastAPI to provide intelligent, context-aware answers from uploaded documents. The backend is built on FastAPI using Retrieval-Augmented Generation (RAG), and the frontend is developed in Next.js for a modern, responsive user interface.
+Ragvocate is an AI-based application that uses LangChain, LangGraph, and FastAPI to provide intelligent, context-aware answers from uploaded documents. It uses Retrieval-Augmented Generation (RAG) with OpenAI and supports conversational memory. The backend is built with FastAPI, and the frontend is developed in Next.js for a modern, responsive experience.
 
 ---
 
-TECH STACK
+## 🛠️ TECH STACK
 
-Backend:
+**Backend:**
+- FastAPI
+- LangChain
+- LangGraph (for stateful chat flows)
+- ChromaDB (vector store)
 
-* FastAPI
-* LangChain
-* FAISS (Vector DB)
+**Frontend:**
+- Next.js (React-based)
+- TypeScript
 
-Frontend:
-
-* Next.js (React-based)
-* TypeScript
-
-Other Tools:
-
-* Python 3.10+
-* PyPDFLoader
-* Tiktoken
-
----
-
-FEATURES
-
-* Upload PDF documents
-* Automatic text chunking and embedding using LangChain
-* Retrieval-Augmented Generation with OpenAI LLM
-* Conversational memory with context
-* Chatbot-style Q\&A interface
-* Fully decoupled architecture (Next.js frontend + FastAPI backend)
+**Tooling:**
+- Python 3.10+
+- Poetry (for dependency and environment management)
+- PyPDFLoader
+- Tiktoken
 
 ---
 
-SETUP INSTRUCTIONS
+## ✨ FEATURES
 
-1. Clone the Repository
+- Upload PDF documents
+- Automatic text chunking and embedding via LangChain
+- Retrieval-Augmented Generation (RAG) with OpenAI LLM
+- LangGraph support for structured conversation flows
+- Conversational memory and history tracking
+- Decoupled frontend/backend architecture
 
-git clone [https://github.com/yourusername/ragvocate.git](https://github.com/yourusername/ragvocate.git)
+---
+
+## ⚙️ SETUP INSTRUCTIONS
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/ragvocate.git
 cd ragvocate
+2. Backend Setup with Poetry (Recommended)
+📦 This project uses Poetry for managing dependencies and virtual environments.
 
-2. Backend Setup (FastAPI)
+Install Poetry
 
-Create virtual environment:
-
+pip install poetry
+Install Dependencies
 ```
-python -m venv env
-source env/bin/activate       (Linux/macOS)
-env\Scripts\activate          (Windows)
+```bash
+poetry install
 ```
+Activate shell
+```poetry shell```
+# Set Environment Variables
 
-Install dependencies:
+Create a .env file in the root directory:
 
-```
-pip install -r requirements.txt
-```
-
-Create a `.env` file in the root directory and add:
-
-```
+dotenv
 OPENAI_API_KEY=your_openai_api_key
-```
-
-Run the backend:
 
 ```
+# Run the Backend
+
 uvicorn app.main:app --reload
+The API will be available at: http://localhost:8000
 ```
+# Frontend Setup (Next.js)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Frontend runs on: http://localhost:3000
 
-The backend runs by default on [http://localhost:8000](http://localhost:8000)
-
-3. Frontend Setup (Next.js)
-
-   cd frontend
-   npm install
-   npm run dev
-
-The frontend will be available at [http://localhost:3000](http://localhost:3000)
-
----
-
-PROJECT STRUCTURE
+# 📁 PROJECT STRUCTURE
+```bash
 
 ragvocate/
-├── app/                    # FastAPI backend
-│   ├── api/                # API routes
-│   ├── core/               # Embedding and LangChain logic
-│   ├── main.py             # Entrypoint
+├── app/
+│   ├── api/                 # FastAPI routes (including /ask and /langgraph endpoints)
+│   ├── core/
+│   │   ├── embedding_loader.py
+│   │   ├── rag.py           # RAG pipeline logic
+│   │   └── langraph.py      # LangGraph chat logic
+│   ├── main.py              # FastAPI app entry point
 │   └── utils.py
-├── frontend/               # Next.js frontend
-├── requirements.txt
+├── scripts/                 # Data preprocessing scripts
+├── data/                    # Processed and chunked documents
+├── frontend/                # Next.js frontend
+├── pyproject.toml           # Poetry config
+├── .env                     # API keys (excluded from version control)
 └── README.md
+```
 
----
+# LANGGRAPH INTEGRATION
+We support both:
 
-NOTES
+#### Standard RAG-based question answering (/ask)
 
-* Ensure the frontend communicates with the backend on the correct URL (`localhost:8000`).
-* CORS settings in FastAPI must allow requests from `localhost:3000`.
-* PDF parsing and chunking are done automatically on upload.
+#### LangGraph-based stateful conversations (/langgraph/ask)
 
----
+You can extend your client to hit /langgraph/ask for memory-aware chats with history logging.
 
-TO-DO
+``` NOTES
+Frontend must communicate with backend at localhost:8000
 
-* Add user authentication
-* Add cloud deployment (e.g., Render, Vercel)
-* Improve document metadata handling
-* Add support for non-PDF file types (e.g., DOCX)
+CORS settings in FastAPI allow http://localhost:3000
+
+Document parsing, chunking, and vector store building are handled by scripts in /scripts

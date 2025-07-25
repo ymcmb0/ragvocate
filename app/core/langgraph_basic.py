@@ -6,7 +6,8 @@ from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
 import os
 from datetime import datetime
-
+from dotenv import load_dotenv
+load_dotenv()
 class GraphState(TypedDict):
     question: str
     context: Optional[str]

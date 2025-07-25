@@ -5,17 +5,12 @@ from pydantic import BaseModel
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 # from langchain.llms import LlamaCpp  # Assuming you're using LlamaCpp
-from embedding_loader import load_vectorstore   
+from app.core.embedding_loader import load_vectorstore   
 # from langchain_community.llms import Ollama
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import os
-from reportlab.lib.pagesizes import LETTER
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import LETTER
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
 import json
 from fpdf import FPDF
 from datetime import datetime
@@ -252,12 +247,21 @@ def generate_report(state: CaseState) -> CaseState:
     1. Gather: {documents}
     2. File by: {deadline}
     """
-
+    # Prepare options text outside the format call
+    options_text = state["legal_options"][0]
+    options = f"""
+    Recommended Visa: {options_text['recommended_visa']}
+    Options: {", ".join(options_text['options'])}
+    Eligibility:
+    - {chr(10).join(options_text['eligibility'])}
+    Recommendations:
+    - {chr(10).join(options_text['recommendations'])}
+    """.strip()
     # Format the text for display
     report_text = template.format(
         name=state["extracted_facts"]["name"],
         country=state["extracted_facts"]["country_of_origin"],
-        options="\n- ".join(str(option) for option in state["legal_options"]),
+        options=options,
         risks="\n- ".join(state["compliance_issues"] or ["None"]),
         documents=", ".join(required_docs),
         deadline=calculate_deadline_llm(
