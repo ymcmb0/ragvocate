@@ -3,8 +3,8 @@ import os
 
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
+from langchain_chroma import Chroma
 
 load_dotenv()
 # Input file (chunked statutes)
@@ -34,12 +34,13 @@ except PermissionError as e:
     exit(1)
 
 # Create embeddings using HuggingFace model
-embedding_model = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
+embedding_model = OpenAIEmbeddings(model="text-embedding-3-small") 
+
+vectorstore = Chroma.from_documents(
+    documents=docs,
+    embedding=embedding_model,
+    collection_name="statutes",         
+    persist_directory=output_vectorstore_dir,
 )
 
-# Create FAISS vectorstore and save it locally
-vectorstore = FAISS.from_documents(docs, embedding_model)
-vectorstore.save_local(output_vectorstore_dir)
-
-print(f"Statutes vectorstore saved to: {output_vectorstore_dir}")
+print(f"Statutes Chroma vectorstore saved to: {output_vectorstore_dir}")
