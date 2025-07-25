@@ -1,0 +1,66 @@
+[tool.poetry]
+name = "ragvocate"
+version = "0.1.0"
+description = "RAG-based legal assistant using FastAPI, LangChain, and Sentence Transformers"
+authors = ["Rizwan Nisar <you@example.com>"]
+readme = "README.md"
+packages = [{ include = "app" }, { include = "scripts" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+
+# Core backend
+fastapi = "0.116.1"
+uvicorn = "0.35.0"
+langchain = "0.3.26"
+langchain-community = "0.3.26"
+langchain-openai = "0.3.28"
+langchain-huggingface = "0.3.0"
+sentence-transformers = "4.1.0"
+faiss-cpu = "1.11.0"
+
+# Embeddings + LLMs
+openai = "1.93.0"
+transformers = "4.53.0"
+tiktoken = "0.9.0"
+torch = "2.7.1"
+
+# Data & NLP
+scikit-learn = "1.7.0"
+numpy = "2.2.6"
+pdfplumber = "0.11.7"
+python-multipart = "0.0.20"
+requests = "2.32.4"
+beautifulsoup4 = "4.13.4"
+
+# Framework / Async
+httpx = "0.28.1"
+aiohttp = "3.12.13"
+
+# Pydantic & Config
+pydantic = "2.11.7"
+pydantic-settings = "2.10.1"
+python-dotenv = "1.1.1"
+
+# Optional: CORS support
+starlette = "0.47.1"
+llama-cpp-python = "^0.3.14"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+ipython = "^8.37.0"
+black = "^24.4.2"
+isort = "^5.13.2"
+mypy = "^1.10.0"
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
