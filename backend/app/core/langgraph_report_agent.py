@@ -1,20 +1,20 @@
-from typing import TypedDict, List, Optional
-from langchain_core.runnables import Runnable, chain
-from langgraph.graph import StateGraph
-from pydantic import BaseModel
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-# from langchain.llms import LlamaCpp  # Assuming you're using LlamaCpp
-from app.core.embedding_loader import load_vectorstore   
-# from langchain_community.llms import Ollama
-from langgraph.graph import StateGraph, END
-from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
-import os
 import json
-from fpdf import FPDF
-from datetime import datetime
+import os
 import re
+from datetime import datetime
+from typing import List, Optional, TypedDict
+
+from dotenv import load_dotenv
+from fpdf import FPDF
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import Runnable, chain
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, StateGraph
+from pydantic import BaseModel
+
+# from langchain.llms import LlamaCpp  # Assuming you're using LlamaCpp
+from app.core.embedding_loader import load_vectorstore
 
 # Load .env variables
 load_dotenv()
@@ -23,12 +23,13 @@ load_dotenv()
 llm = ChatOpenAI(
     model="gpt-3.5-turbo",  # or "gpt-4" if you have access
     temperature=0,
-    openai_api_key=os.getenv("OPENAI_API_KEY")  # Reads from your .env
+    openai_api_key=os.getenv("OPENAI_API_KEY"),  # Reads from your .env
 )
 
 # llm = Ollama(model="tinyllama")
 source = "statutes"
 retriever = load_vectorstore(source).as_retriever()
+
 
 # Shared State
 class CaseState(TypedDict):
@@ -39,11 +40,13 @@ class CaseState(TypedDict):
     compliance_issues: Optional[List[str]]  # From Compliance
     final_report: Optional[str]  # From Report Generator
 
+
 # Models for structured data
 class VisaHistory(BaseModel):
     visa_type: str
     years_held: int
     status: str  # "current", "expired", "denied"
+
 
 class CaseFacts(BaseModel):
     name: str
@@ -52,12 +55,12 @@ class CaseFacts(BaseModel):
     visa_history: List[VisaHistory]
 
 
-
 def case_intake(state: CaseState) -> CaseState:
     """Extract structured facts from user input"""
     parser = JsonOutputParser(pydantic_object=CaseFacts)
 
-    prompt = ChatPromptTemplate.from_template("""
+    prompt = ChatPromptTemplate.from_template(
+        """
     Extract these exact fields from the input:
     - name
     - country_of_origin  
@@ -69,33 +72,35 @@ def case_intake(state: CaseState) -> CaseState:
     {input}
     
  
-    """)
+    """
+    )
 
     chain = prompt | llm | parser
 
     try:
-        result = chain.invoke({
-            "input": state["user_input"],
-            "format_instructions": parser.get_format_instructions()
-        })
-        
+        result = chain.invoke(
+            {
+                "input": state["user_input"],
+                "format_instructions": parser.get_format_instructions(),
+            }
+        )
+
         # Handle both Pydantic model and dict cases
-        if hasattr(result, 'model_dump'):  # Pydantic v2
+        if hasattr(result, "model_dump"):  # Pydantic v2
             state["extracted_facts"] = result.model_dump()
-        elif hasattr(result, 'dict'):  # Pydantic v1
+        elif hasattr(result, "dict"):  # Pydantic v1
             state["extracted_facts"] = result.dict()
         elif isinstance(result, dict):  # Raw dictionary
             state["extracted_facts"] = result
         else:
             raise ValueError(f"Unexpected parser output type: {type(result)}")
-            
+
     except Exception as e:
         print(f"Case intake failed: {e}")
         print(f"Input was: {state['user_input']}")
         state["extracted_facts"] = None
-    
-    return state
 
+    return state
 
 
 def law_retrieval(state: CaseState) -> CaseState:
@@ -105,11 +110,10 @@ def law_retrieval(state: CaseState) -> CaseState:
     Visa History: {[v['visa_type'] for v in state['extracted_facts']['visa_history']]}
     Current Status: {state['extracted_facts']['current_status']}
     """
-    
+
     docs = retriever.get_relevant_documents(query)
     state["relevant_laws"] = [doc.page_content for doc in docs]
     return state
-
 
 
 def legal_reasoning(state: CaseState) -> CaseState:
@@ -133,7 +137,7 @@ def legal_reasoning(state: CaseState) -> CaseState:
     - options (list of visa types)
     - eligibility (list of notes)
     - recommendations (list of next steps)"""
-    
+
     # result = llm.invoke(prompt)
     # state["legal_options"] = result
     result = llm.invoke(prompt)
@@ -157,14 +161,17 @@ def compliance_check(state: CaseState) -> CaseState:
     # Check visa history for past denials
     for visa in facts.get("visa_history", []):
         if visa.get("status", "").lower() == "denied":
-            compliance_issues.append(f"Past visa denial: {visa.get('visa_type', 'Unknown')}")
+            compliance_issues.append(
+                f"Past visa denial: {visa.get('visa_type', 'Unknown')}"
+            )
 
     state["compliance_issues"] = compliance_issues
     return state
 
+
 def get_required_documents(visa_type: str, case_facts: dict) -> List[str]:
     """Ask the LLM to determine required documents based on visa type and applicant details."""
-    
+
     prompt = f"""
     Given the visa type "{visa_type}" and the following applicant information:
     
@@ -176,11 +183,15 @@ def get_required_documents(visa_type: str, case_facts: dict) -> List[str]:
     What documents are typically required for this type of visa application?
     Provide the list as bullet points in JSON format: ["document1", "document2", ...]
     """
-    
+
     try:
         result = llm.invoke(prompt)
         # Attempt to parse result as JSON
-        docs = json.loads(result.content.strip()) if hasattr(result, "content") else json.loads(result.strip())
+        docs = (
+            json.loads(result.content.strip())
+            if hasattr(result, "content")
+            else json.loads(result.strip())
+        )
         if isinstance(docs, list):
             return docs
     except Exception as e:
@@ -188,6 +199,8 @@ def get_required_documents(visa_type: str, case_facts: dict) -> List[str]:
 
     # Fallback if LLM fails or returns invalid output
     return ["passport", "visa application form", "supporting documents"]
+
+
 def calculate_deadline_llm(visa_type: str, case_facts: dict) -> str:
     """Ask the LLM to determine a deadline for visa filing based on case facts and urgency."""
     prompt = f"""
@@ -211,7 +224,9 @@ Respond only with the date.
 
     try:
         result = llm.invoke(prompt)
-        content = result.content.strip() if hasattr(result, "content") else result.strip()
+        content = (
+            result.content.strip() if hasattr(result, "content") else result.strip()
+        )
 
         # Optional strict format check
         if re.match(r"\d{4}-\d{2}-\d{2}", content):
@@ -223,12 +238,12 @@ Respond only with the date.
         print("⚠️ Deadline generation failed:", e)
         return "N/A"
 
+
 def generate_report(state: CaseState) -> CaseState:
     """Create client-ready summary and save it as a PDF"""
 
     required_docs = get_required_documents(
-        state["legal_options"][0]["recommended_visa"],
-        state["extracted_facts"]
+        state["legal_options"][0]["recommended_visa"], state["extracted_facts"]
     )
 
     template = """
@@ -265,9 +280,8 @@ def generate_report(state: CaseState) -> CaseState:
         risks="\n- ".join(state["compliance_issues"] or ["None"]),
         documents=", ".join(required_docs),
         deadline=calculate_deadline_llm(
-            state["legal_options"][0]["recommended_visa"],
-            state["extracted_facts"]
-        )
+            state["legal_options"][0]["recommended_visa"], state["extracted_facts"]
+        ),
     )
 
     # Save the formatted text in state
@@ -278,25 +292,28 @@ def generate_report(state: CaseState) -> CaseState:
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    for line in report_text.strip().split('\n'):
+    for line in report_text.strip().split("\n"):
         pdf.multi_cell(0, 10, line)
 
     # Save to file
-    filename = f"immigration_report_{state['extracted_facts']['name'].replace(' ', '_')}.pdf"
+    filename = (
+        f"immigration_report_{state['extracted_facts']['name'].replace(' ', '_')}.pdf"
+    )
     pdf.output(filename)
 
     return state
 
+
 def build_immigration_graph(retriever: Runnable) -> Runnable:
     builder = StateGraph(CaseState)
-    
+
     # Add nodes for each stage of the process
     builder.add_node("intake", case_intake)
     builder.add_node("retrieve_laws", law_retrieval)
     builder.add_node("analyze", legal_reasoning)
     builder.add_node("compliance", compliance_check)
     builder.add_node("report", generate_report)
-    
+
     # Set entry point and define edges (workflow)
     builder.set_entry_point("intake")
     builder.add_edge("intake", "retrieve_laws")
@@ -304,6 +321,5 @@ def build_immigration_graph(retriever: Runnable) -> Runnable:
     builder.add_edge("analyze", "compliance")
     builder.add_edge("compliance", "report")
     builder.add_edge("report", END)  # End the graph here
-    
-    return builder.compile()
 
+    return builder.compile()

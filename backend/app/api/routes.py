@@ -4,8 +4,9 @@ from fastapi import APIRouter
 from langchain.callbacks import LangChainTracer
 from langsmith import traceable
 from pydantic import BaseModel
+
 from app.core.langgraph_basic import save_chat_history
-from app.core.rag import setup_qa_chain, setup_langgraph, setup_report_graph
+from app.core.rag import setup_langgraph, setup_qa_chain, setup_report_graph
 
 load_dotenv()
 tracer = LangChainTracer()
@@ -13,9 +14,11 @@ router = APIRouter()
 qa_chains = setup_qa_chain()
 graph = setup_langgraph()
 
+
 class QueryRequest(BaseModel):
     query: str
     source: str  # 'statutes', 'precedents', or 'both'
+
 
 @router.post("/ask")
 def ask_question(request: QueryRequest):
@@ -46,10 +49,15 @@ def ask_question(request: QueryRequest):
         return {
             "error": "Invalid source. Choose from 'statutes', 'precedents', or 'both'."
         }
+
+
 class LangGraphQuery(BaseModel):
     query: str
 
+
 chat_history = []
+
+
 @router.post("/ask/langgraph")
 def ask_with_langgraph(request: LangGraphQuery):
     query = request.query
@@ -58,7 +66,7 @@ def ask_with_langgraph(request: LangGraphQuery):
         "question": query,
         "chat_history": chat_history,
         "context": None,
-        "answer": None
+        "answer": None,
     }
 
     result = graph.invoke(state)
@@ -73,9 +81,13 @@ def ask_with_langgraph(request: LangGraphQuery):
 
     return {"answer": result["answer"]}
 
+
 class ReportRequest(BaseModel):
     user_input: str
+
+
 report_graph = setup_report_graph()
+
 
 @router.post("/generate-report")
 def generate_immigration_report(request: ReportRequest):
@@ -86,7 +98,7 @@ def generate_immigration_report(request: ReportRequest):
             "relevant_laws": None,
             "legal_options": None,
             "compliance_issues": None,
-            "final_report": None
+            "final_report": None,
         }
 
         result = report_graph.invoke(input_state)

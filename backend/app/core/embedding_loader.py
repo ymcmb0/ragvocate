@@ -1,19 +1,21 @@
 import os
+
 from dotenv import load_dotenv
+from langchain_chroma import Chroma  # <-- we are using Chroma now
 from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma   # <-- we are using Chroma now
 
 load_dotenv()
 
 embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
 
-statutes_vectorstore_path   = os.getenv("STATUTES_VECTORSTORE")
+statutes_vectorstore_path = os.getenv("STATUTES_VECTORSTORE")
 precedents_vectorstore_path = os.getenv("PRECEDENTS_VECTORSTORE")
 
 vectorstore_paths = {
     "statutes": statutes_vectorstore_path,
     "precedents": precedents_vectorstore_path,
 }
+
 
 def load_vectorstore(name: str) -> Chroma:
     """
@@ -28,5 +30,5 @@ def load_vectorstore(name: str) -> Chroma:
     return Chroma(
         persist_directory=path,
         embedding_function=embedding_model,
-        collection_name=name,      # optional but keeps things tidy
+        collection_name=name,  # optional but keeps things tidy
     )

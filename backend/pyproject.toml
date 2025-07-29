@@ -2,7 +2,7 @@
 name = "ragvocate"
 version = "0.1.0"
 description = "RAG-based legal assistant using FastAPI, LangChain, and Sentence Transformers"
-authors = ["Rizwan Nisar <you@example.com>"]
+authors = ["Rizwan Nisar rizwan.nisar310@gmail.com"]
 readme = "README.md"
 packages = [{ include = "app" }, { include = "scripts" }]
 
