@@ -2,7 +2,7 @@
 name = "ragvocate"
 version = "0.1.0"
 description = "RAG-based legal assistant using FastAPI, LangChain, and Sentence Transformers"
-authors = ["Rizwan Nisar rizwan.nisar310@gmail.com"]
+authors = ["Rizwan Nisar <rizwan.nisar310@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "app" }, { include = "scripts" }]
 
@@ -16,17 +16,13 @@ langchain = "0.3.26"
 langchain-community = "0.3.26"
 langchain-openai = "0.3.28"
 langchain-huggingface = "0.3.0"
-sentence-transformers = "4.1.0"
-faiss-cpu = "1.11.0"
 
 # Embeddings + LLMs
 openai = "1.93.0"
 transformers = "4.53.0"
 tiktoken = "0.9.0"
-torch = "2.7.1"
 
 # Data & NLP
-scikit-learn = "1.7.0"
 numpy = "2.2.6"
 pdfplumber = "0.11.7"
 python-multipart = "0.0.20"
@@ -44,7 +40,6 @@ python-dotenv = "1.1.1"
 
 # Optional: CORS support
 starlette = "0.47.1"
-llama-cpp-python = "^0.3.14"
 langgraph = "^0.5.4"
 chromadb = "^1.0.15"
 chroma = "^0.2.0"
