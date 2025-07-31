@@ -1,0 +1,3 @@
+[submodule "ragvocate-frontend"]
+	path = ragvocate-frontend
+	url = https://github.com/ymcmb0/ragvocate-frontend.git
