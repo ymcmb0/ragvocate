@@ -3,8 +3,9 @@ import os
 
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
-from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings
+
 load_dotenv()
 input_chunks_path = os.getenv("PRECEDENTS_PROCESSED_TEXT")
 output_vectorstore_dir = os.getenv("PRECEDENTS_VECTORSTORE")
@@ -18,12 +19,12 @@ with open(input_chunks_path, "r", encoding="utf-8") as f:
         )
 
 # Create embeddings using HuggingFace model
-embedding_model = OpenAIEmbeddings(model="text-embedding-3-small") 
+embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
 
 vectorstore = Chroma.from_documents(
     documents=docs,
     embedding=embedding_model,
-    collection_name="precedents",         
+    collection_name="precedents",
     persist_directory=output_vectorstore_dir,
 )
 

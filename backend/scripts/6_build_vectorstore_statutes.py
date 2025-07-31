@@ -3,8 +3,8 @@ import os
 
 from dotenv import load_dotenv
 from langchain.docstore.document import Document
-from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings
 
 load_dotenv()
 # Input file (chunked statutes)
@@ -34,12 +34,12 @@ except PermissionError as e:
     exit(1)
 
 # Create embeddings using HuggingFace model
-embedding_model = OpenAIEmbeddings(model="text-embedding-3-small") 
+embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
 
 vectorstore = Chroma.from_documents(
     documents=docs,
     embedding=embedding_model,
-    collection_name="statutes",         
+    collection_name="statutes",
     persist_directory=output_vectorstore_dir,
 )
 
