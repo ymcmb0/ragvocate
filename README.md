@@ -1,5 +1,7 @@
 # RAGvocate
 
+![RAGvocate Banner](assets/banner.png)
+
 A Retrieval-Augmented Generation (RAG) legal assistant specializing in U.S. immigration law. RAGvocate combines a FastAPI backend powered by LangChain and LangGraph with a Next.js frontend to provide intelligent legal Q&A, conversational memory, and automated immigration case report generation.
 
 ---
@@ -63,6 +65,8 @@ A five-stage agentic pipeline that processes a free-text case description and ou
 ---
 
 ## Architecture
+
+![Architecture Diagram](assets/architecture-diagram.png)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
